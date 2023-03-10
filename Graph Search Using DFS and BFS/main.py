@@ -70,16 +70,16 @@ class Depth_First_Search(data_set):
             lst.append(self.maze[i][j])
         print("Path: ",lst)
 
+if __name__ == '__main__':
+    bfs = Breadth_First_Search()
+    dfs = Depth_First_Search()
 
-bfs = Breadth_First_Search()
-dfs = Depth_First_Search()
-
-print("Breadth First Search")
-print("Nodes: " , bfs.find_path())
-bfs.output_path()
-print()
-print("Depth First Search")
-print("Nodes: ",dfs.find_path())
-dfs.output_path()
+    print("Breadth First Search")
+    print("Nodes: " , bfs.find_path())
+    bfs.output_path()
+    print()
+    print("Depth First Search")
+    print("Nodes: ",dfs.find_path())
+    dfs.output_path()
 
 
