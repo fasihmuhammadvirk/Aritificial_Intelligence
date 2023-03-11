@@ -1,66 +1,86 @@
-# Define actions
-CLEAN = 0
-DIRTY = 1
 
-# Define states and goal state
-STATES = ['A', 'B', 'C']
-GOAL_STATE = {'A': 0, 'B': 0, 'C': 0}
+#Goal State that the vacuum has to achieved
+goal_state = {'A':0,'B':0,'C':0}
 
-# Define transition model
-TRANSITION_MODEL = {
-    'A': {'right': 'B', 'clean': 0},
-    'B': {'left': 'A', 'right': 'C', 'clean': 0},
-    'C': {'left': 'B', 'clean': 0}
-}
+#Neighbors of all the Given Rooms
+neighbors = {'A':{'Right': 'B','Left':None}, 'B':{'Right':'C','Left':'A'},'C':{'Right':None,'Left':'B'}}
 
-# Define goal test
-def is_goal_state(state):
-    return state == GOAL_STATE
+#Taking Input on which Room Vacuum Currently is 
+vacuum_location = input("Enter location of the Vacuum (A/B/C): ")
 
-# Define path cost function
-def path_cost(action):
-    return 1
-
-# Define reflex agent function
-def reflex_agent(location, status, environment):
-    if status == DIRTY:
-        return CLEAN
-    elif location == 'A':
-        return 'right'
-    elif location == 'B':
-        if environment['A'] == DIRTY:
-            return 'left'
-        else:
-            return 'right'
-    elif location == 'C':
-        return 'left'
-
-# Define function to run agent for given inputs
-def run_agent(location, status, environment):
-    state = {location: status}
-    path = []
-    while not is_goal_state(state):
-        action = reflex_agent(location, status, environment)
-        path.append(action)
-        if action == CLEAN:
-            state[location] = CLEAN
-            status = CLEAN
-        elif action == 'left':
-            location = TRANSITION_MODEL[location]['left']
-            status = environment[location]
-        elif action == 'right':
-            location = TRANSITION_MODEL[location]['right']
-            status = environment[location]
-    return path, len(path)
-
-# Example usage
-location = input("Enter location (A/B/C): ")
-status = int(input("Enter status of current location (0/1): "))
-environment = {
+#Defining the current state of the Rooms 
+current_state = {
     'A': int(input("Enter status of A (0/1): ")),
     'B': int(input("Enter status of B (0/1): ")),
     'C': int(input("Enter status of C (0/1): "))
 }
-path, cost = run_agent(location, status, environment)
-print("Path: ", path)
-print("Cost: ", cost)
+
+
+#defining the Reflex Agent to clean the Rooms
+def reflex_agent(initial,state,goal_state,neighbors):
+    
+    current_state = state.copy()
+    
+    #Cost for cleaning all rooms on the left 
+    cost_r = 0 
+
+    starting_state = initial
+    
+    #the last room that the vacuum clean on the right of the given room 
+    global last_node
+
+    #loop for cleaning all the rooms that are on the Right Side of the given Room
+    for key in neighbors.keys():
+
+        if starting_state == key:
+            if starting_state is not None:
+
+                if current_state[key] != 0:
+                    current_state[key] = 0
+                    cost_r += 1  
+                else:
+                    cost_r += 1
+                starting_state = neighbors[key]['Right']
+
+                if neighbors[key]['Right'] == None:
+                    last_node = key 
+                else:
+                    last_node = neighbors[key]['Right']
+
+    #cost for cleaning all rooms on the left of the last room vacuum clean 
+    cost_l = 0 
+    
+    #loop for cleaning all the room that are on the left side of the last room vacuum clean 
+    while True:
+
+        if goal_state == current_state:
+            break 
+ 
+        for key in neighbors.keys():
+
+            if last_node == key:
+                if last_node is not None:
+
+                    if current_state[key] != 0:
+
+                        current_state[key] = 0
+                        cost_l += 1 
+
+                    else:
+                        cost_l += 1    
+                         
+                    last_node = neighbors[key]['Left']
+
+    #calculating the total cost
+    cost = cost_l + cost_r
+
+    #returning the total cost and the state of all room after cleaning 
+    return current_state , cost 
+
+#Calling the Reflex_Agent to clean the Room 
+final_state , cost = reflex_agent(vacuum_location,current_state,goal_state,neighbors)
+
+#Printing the Output 
+print("Rooms State Before the Vacuum Cleans them: ", current_state)
+print("Rooms State After Vacuum Cleans them: ", final_state)
+print("Total Cost : ",cost)
